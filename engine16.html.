@@ -1,0 +1,407 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OLIM Engine 16.0</title>
+<style>
+:root{--bg:#080d18;--panel:#111b2d;--line:#263650;--blue:#3978ff;--text:#edf3ff;--muted:#91a2bd}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+header{padding:22px 16px;background:#0c1424;border-bottom:1px solid var(--line)}
+h1{margin:0;font-size:25px;letter-spacing:2px}
+header p{color:var(--muted);font-size:12px;margin:7px 0 0}
+main{max-width:950px;margin:auto;padding:16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:17px;margin-bottom:15px}
+h2{font-size:17px;margin:0 0 15px}
+label{display:block;color:#b9c8df;font-size:13px;margin:12px 0 6px}
+input,select,textarea{width:100%;background:#091222;color:white;border:1px solid #30425e;border-radius:8px;padding:12px;font-size:14px}
+textarea{min-height:100px;resize:vertical;line-height:1.5}
+button{background:var(--blue);color:white;border:0;border-radius:9px;padding:13px 16px;font-weight:bold;font-size:14px;cursor:pointer}
+button:disabled{opacity:.45}
+.secondary{background:#24344f}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.small{font-size:12px;color:var(--muted);line-height:1.5}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+#status{padding:12px;border-radius:8px;background:#091222;color:#a9c8ff;font-size:13px;line-height:1.5}
+#preview{width:100%;max-height:440px;object-fit:contain;background:#03060b;border-radius:9px}
+#script{min-height:230px}
+footer{padding:20px;text-align:center;color:var(--muted);font-size:11px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}h1{font-size:21px}}
+</style>
+</head>
+<body>
+<header>
+<h1>OLIM ENGINE 16.0</h1>
+<p>ONE-CLICK DOCUMENTARY VIDEO STUDIO</p>
+</header>
+
+<main>
+<section class="panel">
+<h2>01 — Настройки фильма</h2>
+<label>Название проекта</label>
+<input id="title" value="Мой документальный фильм">
+<label>Тема фильма</label>
+<textarea id="topic" placeholder="Например: Тайны древней Атлантиды"></textarea>
+<div class="grid">
+<div>
+<label>Продолжительность</label>
+<select id="duration">
+<option value="60">1 минута — тест</option>
+<option value="180" selected>3 минуты</option>
+<option value="300">5 минут</option>
+</select>
+</div>
+<div>
+<label>Формат</label>
+<select id="format">
+<option value="portrait">9:16 — TikTok</option>
+<option value="landscape">16:9 — YouTube</option>
+</select>
+</div>
+</div>
+<label>Стиль</label>
+<select id="style">
+<option value="cinema">Кинематографический документальный</option>
+<option value="history">Историческое расследование</option>
+<option value="mystery">Тайна и загадка</option>
+</select>
+</section>
+
+<section class="panel">
+<h2>02 — Материалы фильма</h2>
+<label>Изображения для сцен (можно выбрать несколько)</label>
+<input id="images" type="file" accept="image/*" multiple>
+<p class="small">Добавь фотографии по теме. Если фотографий меньше восьми, оставшиеся сцены будут созданы с анимированным фоном.</p>
+<label>Файл озвучки (аудио)</label>
+<input id="voice" type="file" accept="audio/*">
+<label>Фоновая музыка (аудио)</label>
+<input id="music" type="file" accept="audio/*">
+<p class="small">Озвучка и музыка добавляются из выбранных файлов. Браузерная функция чтения текста ниже предназначена для прослушивания сценария и не записывается в готовый ролик.</p>
+</section>
+
+<section class="panel">
+<h2>03 — Script Studio</h2>
+<p class="small">Создай черновик объяснения темы, затем проверь и отредактируй текст перед экспортом.</p>
+<div class="actions">
+<button id="makeScript">Создать сценарий</button>
+<button class="secondary" id="speak">Прослушать текст</button>
+</div>
+<label>Сценарий и текст субтитров</label>
+<textarea id="script" placeholder="Здесь появится сценарий..."></textarea>
+</section>
+
+<section class="panel">
+<h2>04 — Video Renderer</h2>
+<p class="small">Сборщик создаёт видеоряд из изображений и анимированных фонов, добавляет текстовые сцены, переходы и загруженные аудиодорожки.</p>
+<div id="status">Система готова. Сначала укажи тему и подготовь материалы.</div>
+<div class="actions">
+<button id="render">СОЗДАТЬ ВИДЕО</button>
+<button class="secondary" id="stop" disabled>Остановить</button>
+</div>
+<div style="margin-top:15px">
+<video id="preview" controls playsinline></video>
+</div>
+<div class="actions">
+<a id="download" style="display:none;color:#8db5ff" download="olim-documentary.webm">Скачать готовый ролик</a>
+</div>
+</section>
+
+<section class="panel">
+<h2>05 — Экспорт проекта</h2>
+<button class="secondary" id="save">Сохранить настройки и сценарий</button>
+<p class="small">Сохранение выполняется в браузере на этом устройстве. Оно не создаёт резервную копию видео.</p>
+</section>
+</main>
+<footer>OLIM ENGINE 16.0 · DOCUMENTARY PRODUCTION SYSTEM</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+let recording = null;
+let stopRequested = false;
+let lastVideoUrl = null;
+
+function makeScript(){
+  const topic = $("topic").value.trim();
+  if(!topic){alert("Сначала введи тему фильма.");return;}
+  const title = $("title").value.trim() || topic;
+  const blocks = [
+    `Сегодня мы исследуем тему: ${topic}. Почему эта история заслуживает внимания? И какие факты помогают понять её?`,
+    `Начнём с самого начала. Чтобы разобраться в теме, необходимо понять исторический и научный контекст. Именно он помогает увидеть полную картину.`,
+    `Но за известными событиями скрываются вопросы. Какие источники подтверждают эту историю? Что известно точно, а что остаётся предметом споров?`,
+    `Рассмотрим основные свидетельства и версии. Важно отделять проверенные сведения от предположений и популярных легенд.`,
+    `Теперь обратимся к деталям. Они помогают понять, почему эта тема продолжает вызывать интерес и какие выводы можно сделать.`,
+    `У этой истории есть разные объяснения. Сравнение версий позволяет увидеть сильные и слабые стороны каждого аргумента.`,
+    `Что мы знаем сегодня? Надёжные выводы должны опираться на источники, исследования и подтверждаемые факты.`,
+    `Итак, ${topic} — тема, в которой важно различать доказательства, гипотезы и вопросы без окончательного ответа. На этом наше документальное расследование завершается.`
+  ];
+  $("script").value = `# ${title}\n\n` + blocks.join("\n\n");
+  $("status").textContent = "Черновик сценария создан. Это шаблон, а не проверенное исследование. Проверь факты и отредактируй текст.";
+}
+
+function speakText(){
+  if(!("speechSynthesis" in window)){alert("Озвучка браузера не поддерживается.");return;}
+  const text = $("script").value.trim();
+  if(!text){alert("Сначала создай сценарий.");return;}
+  speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "ru-RU";
+  utterance.rate = 0.95;
+  speechSynthesis.speak(utterance);
+}
+
+function saveProject(){
+  const data = {
+    title:$("title").value,
+    topic:$("topic").value,
+    duration:$("duration").value,
+    format:$("format").value,
+    style:$("style").value,
+    script:$("script").value
+  };
+  localStorage.setItem("olim16_project",JSON.stringify(data));
+  $("status").textContent = "Настройки и сценарий сохранены в этом браузере.";
+}
+
+function loadProject(){
+  try{
+    const data = JSON.parse(localStorage.getItem("olim16_project") || "null");
+    if(!data)return;
+    ["title","topic","duration","format","style","script"].forEach(k=>{
+      if(data[k] !== undefined)$(k).value=data[k];
+    });
+  }catch(e){}
+}
+
+function drawCover(ctx,w,h,title,topic,scene,image,progress,style){
+  const t = progress;
+  ctx.clearRect(0,0,w,h);
+  const hue = style==="mystery" ? 225 : style==="history" ? 28 : 215;
+  const gradient=ctx.createLinearGradient(0,0,w,h);
+  gradient.addColorStop(0,`hsl(${hue},45%,18%)`);
+  gradient.addColorStop(1,"#050914");
+  ctx.fillStyle=gradient;
+  ctx.fillRect(0,0,w,h);
+
+  if(image && image.complete && image.naturalWidth){
+    const scale=Math.max(w/image.width,h/image.height)*(1+0.10*t);
+    const iw=image.width*scale, ih=image.height*scale;
+    const x=(w-iw)/2 - t*18;
+    const y=(h-ih)/2 - t*24;
+    ctx.save();
+    ctx.globalAlpha=0.86;
+    ctx.drawImage(image,x,y,iw,ih);
+    ctx.restore();
+  }else{
+    ctx.save();
+    for(let i=0;i<7;i++){
+      ctx.beginPath();
+      ctx.arc(w*(0.15+i*0.13),h*(0.35+(i%3)*0.1),w*(0.12+t*0.025),0,Math.PI*2);
+      ctx.fillStyle=`rgba(100,145,210,${0.04+i*0.008})`;
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  const shade=ctx.createLinearGradient(0,h*0.25,0,h);
+  shade.addColorStop(0,"rgba(0,0,0,.05)");
+  shade.addColorStop(1,"rgba(0,0,0,.9)");
+  ctx.fillStyle=shade;
+  ctx.fillRect(0,0,w,h);
+
+  ctx.fillStyle="#8db5ff";
+  ctx.font=`bold ${Math.round(w*0.025)}px Arial`;
+  ctx.fillText("OLIM DOCUMENTARY",w*0.07,h*0.08);
+
+  ctx.fillStyle="#fff";
+  ctx.font=`bold ${Math.round(w*0.055)}px Arial`;
+  wrapText(ctx,scene,w*0.07,h*0.70,w*0.84,Math.round(w*0.067));
+
+  ctx.fillStyle="rgba(255,255,255,.8)";
+  ctx.font=`${Math.round(w*0.027)}px Arial`;
+  wrapText(ctx,topic,w*0.07,h*0.87,w*0.84,Math.round(w*0.04));
+
+  ctx.fillStyle="rgba(255,255,255,.35)";
+  ctx.fillRect(w*0.07,h*0.95,w*0.86,5);
+  ctx.fillStyle="#80aaff";
+  ctx.fillRect(w*0.07,h*0.95,w*0.86*t,5);
+}
+
+function wrapText(ctx,text,x,y,maxWidth,lineHeight){
+  const words=String(text).split(/\s+/);
+  let line="";
+  for(const word of words){
+    const test=line ? line+" "+word : word;
+    if(ctx.measureText(test).width>maxWidth && line){
+      ctx.fillText(line,x,y);
+      line=word;
+      y+=lineHeight;
+    }else line=test;
+  }
+  if(line)ctx.fillText(line,x,y);
+}
+
+function getScenes(){
+  const lines=$("script").value.split(/\n+/).map(x=>x.replace(/^#+\s*/,"").trim()).filter(Boolean);
+  const title=$("title").value.trim() || $("topic").value.trim();
+  const scenes=lines.filter(x=>x.length>25);
+  if(scenes.length)return scenes.slice(0,8);
+  return [
+    title,
+    "Исторический контекст",
+    "Главные события",
+    "Свидетельства и источники",
+    "Разные версии",
+    "Важные детали",
+    "Что известно сегодня",
+    "Итоги расследования"
+  ];
+}
+
+async function renderVideo(){
+  if(recording)return;
+  const topic=$("topic").value.trim();
+  if(!topic){alert("Введи тему фильма.");return;}
+  if(!$("script").value.trim()){makeScript();}
+  const imageFiles=Array.from($("images").files || []).filter(f=>f.type.startsWith("image/"));
+  const images=await Promise.all(imageFiles.map(file=>new Promise(resolve=>{
+    const img=new Image();
+    img.onload=()=>resolve(img);
+    img.onerror=()=>resolve(null);
+    img.src=URL.createObjectURL(file);
+  })));
+  const usableImages=images.filter(Boolean);
+  const scenes=getScenes();
+  const duration=Number($("duration").value);
+  const portrait=$("format").value==="portrait";
+  const w=portrait?720:1280, h=portrait?1280:720;
+  const canvas=document.createElement("canvas");
+  canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext("2d");
+  const stream=canvas.captureStream(30);
+
+  let audioContext=null;
+  const audioElements=[];
+  try{
+    const voiceFile=$("voice").files[0];
+    const musicFile=$("music").files[0];
+    if(voiceFile || musicFile){
+      audioContext=new (window.AudioContext||window.webkitAudioContext)();
+      const destination=audioContext.createMediaStreamDestination();
+      for(const [file,volume,loop] of [[voiceFile,1,false],[musicFile,0.22,true]]){
+        if(!file)continue;
+        const audio=new Audio(URL.createObjectURL(file));
+        audio.loop=loop;
+        audio.preload="auto";
+        const source=audioContext.createMediaElementSource(audio);
+        const gain=audioContext.createGain();
+        gain.gain.value=volume;
+        source.connect(gain);
+        gain.connect(destination);
+        audioElements.push(audio);
+      }
+      destination.stream.getAudioTracks().forEach(track=>stream.addTrack(track));
+      await audioContext.resume();
+    }
+  }catch(err){
+    $("status").textContent="Не удалось подключить аудио. Проверь аудиофайлы и повтори.";
+    stream.getTracks().forEach(t=>t.stop());
+    return;
+  }
+
+  const types=[
+    "video/mp4;codecs=avc1.42E01E",
+    "video/mp4",
+    "video/webm;codecs=vp9",
+    "video/webm;codecs=vp8",
+    "video/webm"
+  ];
+  const mime=types.find(t=>MediaRecorder.isTypeSupported(t));
+  if(!mime){
+    alert("Этот браузер не поддерживает запись видео. Попробуй обновить Chrome.");
+    stream.getTracks().forEach(t=>t.stop());
+    return;
+  }
+
+  const chunks=[];
+  try{
+    recording=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:3500000});
+  }catch(e){
+    alert("Не удалось запустить видеосборку в этом браузере.");
+    recording=null;
+    stream.getTracks().forEach(t=>t.stop());
+    return;
+  }
+
+  const recorder=recording;
+  recorder.ondataavailable=e=>{if(e.data && e.data.size)chunks.push(e.data);};
+  recorder.onstop=()=>{
+    const blob=new Blob(chunks,{type:mime});
+    if(lastVideoUrl)URL.revokeObjectURL(lastVideoUrl);
+    lastVideoUrl=URL.createObjectURL(blob);
+    $("preview").src=lastVideoUrl;
+    const ext=mime.includes("mp4")?"mp4":"webm";
+    $("download").href=lastVideoUrl;
+    $("download").download="olim-documentary."+ext;
+    $("download").textContent="Скачать готовый ролик ("+ext.toUpperCase()+")";
+    $("download").style.display="inline-block";
+    $("status").textContent="Готово. Видео собрано. Формат: "+ext.toUpperCase()+".";
+    $("render").disabled=false;
+    $("stop").disabled=true;
+    recording=null;
+    audioElements.forEach(a=>{a.pause();a.src="";});
+    if(audioContext)audioContext.close();
+    stream.getTracks().forEach(t=>t.stop());
+  };
+
+  stopRequested=false;
+  $("render").disabled=true;
+  $("stop").disabled=false;
+  $("status").textContent="Сборка началась. Не закрывай страницу и не блокируй телефон.";
+
+  try{
+    recorder.start(1000);
+    for(const audio of audioElements){
+      audio.currentTime=0;
+      await audio.play();
+    }
+  }catch(e){
+    $("status").textContent="Браузер не разрешил начать запись. Нажми создание видео ещё раз.";
+    try{recorder.stop();}catch(err){}
+    return;
+  }
+
+  const start=performance.now();
+  const sceneDuration=duration/scenes.length;
+
+  function frame(now){
+    if(stopRequested || recorder.state!=="recording")return;
+    const elapsed=(now-start)/1000;
+    const sceneIndex=Math.min(scenes.length-1,Math.floor(elapsed/sceneDuration));
+    const sceneProgress=(elapsed%sceneDuration)/sceneDuration;
+    const totalProgress=Math.min(1,elapsed/duration);
+    const img=usableImages.length?usableImages[sceneIndex%usableImages.length]:null;
+    drawCover(ctx,w,h,$("title").value,topic,scenes[sceneIndex],img,sceneProgress,$("style").value);
+    $("status").textContent="Создание видео: "+Math.floor(totalProgress*100)+"% · Сцена "+(sceneIndex+1)+" из "+scenes.length;
+    if(elapsed>=duration){
+      recorder.stop();
+      return;
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+$("makeScript").addEventListener("click",makeScript);
+$("speak").addEventListener("click",speakText);
+$("save").addEventListener("click",saveProject);
+$("render").addEventListener("click",renderVideo);
+$("stop").addEventListener("click",()=>{
+  stopRequested=true;
+  if(recording && recording.state!=="inactive")recording.stop();
+});
+loadProject();
+</script>
+</body>
+</html>
