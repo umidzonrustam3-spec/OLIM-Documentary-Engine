@@ -1,0 +1,115 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OLIM Documentary Engine</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 25px;
+  background: #090b10;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+.container { max-width: 700px; margin: auto; }
+h1 { letter-spacing: 2px; }
+.accent { color: #d6a85c; }
+p { color: #a5a8b1; }
+label { display: block; margin-top: 22px; }
+input, select, button, textarea {
+  width: 100%;
+  padding: 14px;
+  margin-top: 9px;
+  border-radius: 9px;
+  border: 1px solid #303541;
+  background: #151923;
+  color: white;
+  font-size: 16px;
+}
+button {
+  background: #b68a48;
+  color: #080808;
+  font-weight: bold;
+  border: none;
+  margin-top: 25px;
+}
+#result {
+  margin-top: 25px;
+  padding: 18px;
+  background: #151923;
+  border-radius: 12px;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>OLIM <span class="accent">DOCUMENTARY</span></h1>
+  <p>CINEMATIC DOCUMENTARY ENGINE</p>
+
+  <label>Тема документального фильма</label>
+  <input id="topic" placeholder="Например: История UFC">
+
+  <label>Стиль фильма</label>
+  <select id="style">
+    <option>Кинематографический</option>
+    <option>Исторический</option>
+    <option>Мрачный документальный</option>
+    <option>Расследование</option>
+  </select>
+
+  <label>Продолжительность</label>
+  <select id="duration">
+    <option>1 минута</option>
+    <option>5 минут</option>
+    <option>10 минут</option>
+    <option>30 минут</option>
+  </select>
+
+  <button onclick="generate()">СОЗДАТЬ СЦЕНАРНЫЙ ПЛАН</button>
+
+  <div id="result">Здесь появится сценарный план...</div>
+</div>
+
+<script>
+function generate() {
+  const topic = document.getElementById("topic").value.trim();
+  const style = document.getElementById("style").value;
+  const duration = document.getElementById("duration").value;
+
+  if (!topic) {
+    alert("Введите тему фильма");
+    return;
+  }
+
+  document.getElementById("result").textContent =
+`OLIM DOCUMENTARY ENGINE
+
+ТЕМА: ${topic}
+СТИЛЬ: ${style}
+ДЛИТЕЛЬНОСТЬ: ${duration}
+
+1. ВСТУПЛЕНИЕ
+Создать сильное кинематографическое начало.
+
+2. КОНТЕКСТ
+Рассказать предысторию и основные события.
+
+3. ГЛАВНАЯ ИСТОРИЯ
+Раскрыть ключевые факты и важные моменты.
+
+4. КУЛЬМИНАЦИЯ
+Представить главный поворот истории.
+
+5. ЗАКЛЮЧЕНИЕ
+Подвести итог и оставить сильную финальную мысль.
+
+ПЛАН СОЗДАН ЛОКАЛЬНО. ФАКТЫ ТРЕБУЮТ ПРОВЕРКИ.`;
+}
+</script>
+</body>
+</html>
