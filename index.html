@@ -3,150 +3,317 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OLIM Documentary Engine 3.0</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080b14">
+<title>OLIM Documentary Engine 10.0</title>
 <style>
+:root{--bg:#080b14;--panel:#111827;--panel2:#172033;--line:#26334a;--text:#edf3ff;--muted:#91a0b8;--blue:#6d9cff;--cyan:#55d6d0;--gold:#e9bd70}
 *{box-sizing:border-box}
-body{margin:0;padding:18px;background:#090b10;color:#fff;font-family:Arial,sans-serif}
-main{max-width:900px;margin:auto}
-h1{font-size:26px;letter-spacing:2px}
-.gold{color:#c49a58}
-.muted{color:#9299a8}
-.panel{background:#151923;border:1px solid #303744;border-radius:12px;padding:17px;margin:18px 0}
-label{display:block;margin:15px 0 7px}
-input,select,textarea{width:100%;padding:13px;background:#090e17;border:1px solid #384151;border-radius:8px;color:white;font-size:15px}
-textarea{min-height:75px}
-button{width:100%;padding:14px;margin-top:13px;background:#c49a58;color:#111;border:0;border-radius:8px;font-weight:bold}
-.secondary{background:#303947;color:white}
-.scene{padding:15px;margin:14px 0;background:#0b111c;border-left:3px solid #c49a58;border-radius:7px}
-.scene h3{color:#c49a58}
-.scene p{line-height:1.55}
-#output{line-height:1.6;overflow-wrap:anywhere}
+body{margin:0;background:radial-gradient(circle at 80% 0%,#172746 0,transparent 35%),var(--bg);color:var(--text);font:15px Arial,sans-serif}
+button,input,textarea,select{font:inherit}
+header{padding:22px 5%;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#080b14dd;position:sticky;top:0;z-index:5;backdrop-filter:blur(12px)}
+.logo{font-weight:900;letter-spacing:2px;font-size:20px}.logo span{color:var(--cyan)}
+.version{color:var(--gold);font-size:12px;letter-spacing:2px}
+.layout{display:grid;grid-template-columns:230px 1fr;min-height:calc(100vh - 75px)}
+nav{padding:20px 13px;border-right:1px solid var(--line);background:#0c1220}
+nav button{width:100%;padding:13px 12px;margin:3px 0;text-align:left;border:1px solid transparent;background:transparent;color:var(--muted);border-radius:10px;cursor:pointer}
+nav button.active,nav button:hover{background:var(--panel2);color:white;border-color:var(--line)}
+main{padding:30px;max-width:1200px;width:100%;margin:auto}
+.page{display:none}.page.active{display:block}
+h1{font-size:30px;margin:0 0 9px}h2{font-size:19px;margin:0 0 15px}
+.sub{color:var(--muted);line-height:1.6;margin-bottom:25px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:22px 0}
+.card,.panel{background:linear-gradient(145deg,var(--panel),#0e1625);border:1px solid var(--line);border-radius:15px;padding:18px}
+.card strong{font-size:25px;display:block;margin:10px 0;color:var(--cyan)}
+.card small,.muted{color:var(--muted)}
+label{display:block;font-size:13px;color:#b7c6dc;margin:13px 0 7px}
+input,textarea,select{width:100%;padding:12px;background:#080f1d;border:1px solid var(--line);border-radius:9px;color:white;outline:none}
+textarea{min-height:110px;resize:vertical}
+input:focus,textarea:focus,select:focus{border-color:var(--blue)}
+.btn{padding:11px 16px;border:0;border-radius:9px;background:var(--blue);color:#07101f;font-weight:bold;cursor:pointer;margin:8px 5px 0 0}
+.btn.secondary{background:#263650;color:white;border:1px solid #344762}
+.btn.gold{background:var(--gold);color:#211707}
+.output{white-space:pre-wrap;line-height:1.7;background:#080f1d;border:1px solid var(--line);border-radius:11px;padding:17px;margin-top:15px;min-height:90px;overflow-wrap:anywhere}
+.item{padding:14px;border:1px solid var(--line);border-radius:10px;margin:10px 0;background:#0d1524}
+.item h3{margin:0 0 8px;color:var(--cyan);font-size:16px}
+.tag{display:inline-block;padding:5px 8px;border:1px solid var(--line);border-radius:20px;color:var(--gold);font-size:11px;margin:3px}
+hr{border:0;border-top:1px solid var(--line);margin:20px 0}
+footer{text-align:center;color:var(--muted);padding:25px;font-size:12px}
+@media(max-width:760px){.layout{grid-template-columns:1fr}nav{display:grid;grid-template-columns:repeat(2,1fr);border-right:0;border-bottom:1px solid var(--line)}nav button{font-size:12px;padding:10px}main{padding:19px}.grid,.cards{grid-template-columns:1fr}h1{font-size:25px}}
 </style>
 </head>
 <body>
+<header>
+ <div class="logo">OLIM <span>ENGINE</span></div>
+ <div class="version">DOCUMENTARY STUDIO · 10.0</div>
+</header>
+<div class="layout">
+<nav id="nav">
+ <button class="active" data-page="dashboard">◈ Dashboard</button>
+ <button data-page="research">⌕ Research AI</button>
+ <button data-page="script">▤ Script AI</button>
+ <button data-page="scenes">▦ Scene Director</button>
+ <button data-page="timeline">◷ Timeline</button>
+ <button data-page="voice">♫ Voice Studio</button>
+ <button data-page="library">▣ Project Library</button>
+ <button data-page="export">⇩ Export Center</button>
+ <button data-page="assistant">✧ AI Assistant</button>
+ <button data-page="settings">⚙ Settings</button>
+</nav>
 <main>
-<h1>OLIM <span class="gold">DOCUMENTARY</span></h1>
-<p class="muted">ENGINE 3.0 — SCENE DIRECTOR</p>
 
-<section class="panel">
-<h3>PROJECT SETTINGS</h3>
-
-<label>Тема фильма</label>
-<input id="topic" placeholder="Например: История UFC">
-
-<label>Главный герой</label>
-<input id="hero" placeholder="Например: Путь бойца">
-
-<label>Продолжительность</label>
-<select id="duration">
-<option value="1">1 минута</option>
-<option value="5">5 минут</option>
-<option value="10">10 минут</option>
-<option value="30">30 минут</option>
-</select>
-
-<label>Стиль</label>
-<select id="style">
-<option>Кинематографический</option>
-<option>Исторический</option>
-<option>Спортивный документальный</option>
-<option>Расследование</option>
-<option>Биографический</option>
-<option>Мрачный документальный</option>
-</select>
-
-<label>Дополнительная информация</label>
-<textarea id="details" placeholder="Важные события, даты, факты..."></textarea>
-
-<button onclick="createFilm()">СОЗДАТЬ ДОКУМЕНТАЛЬНЫЙ ФИЛЬМ</button>
+<section class="page active" id="dashboard">
+ <h1>Documentary Studio</h1>
+ <p class="sub">Рабочая среда для создания документальных фильмов, расследований и историй.</p>
+ <div class="cards">
+  <div class="card">Текущий проект<strong id="dashTitle">Без названия</strong><small>Название проекта</small></div>
+  <div class="card">Сценарий<strong id="dashWords">0</strong><small>Символов в сценарии</small></div>
+  <div class="card">Сцены<strong id="dashScenes">0</strong><small>Создано сцен</small></div>
+ </div>
+ <div class="panel">
+  <h2>Создать новый проект</h2>
+  <label>Название документального фильма</label>
+  <input id="projectTitle" placeholder="Например: Тайны древних цивилизаций">
+  <label>Главная тема</label>
+  <textarea id="projectTopic" placeholder="Опиши, о чём будет документальный фильм..."></textarea>
+  <div class="grid">
+   <div><label>Формат</label><select id="projectStyle"><option>Документальный фильм</option><option>Историческое расследование</option><option>Криминальная история</option><option>Биография</option><option>Спортивная история</option><option>Научный фильм</option></select></div>
+   <div><label>Продолжительность</label><select id="projectDuration"><option value="5">5 минут</option><option value="10">10 минут</option><option value="15">15 минут</option><option value="30">30 минут</option><option value="60">60 минут</option></select></div>
+  </div>
+  <button class="btn" onclick="createProject()">Создать проект</button>
+  <button class="btn secondary" onclick="go('script')">Перейти к сценарию</button>
+ </div>
+ <div class="panel" style="margin-top:16px"><h2>Система 10.0</h2><p class="muted">Модули связаны между собой: тема проекта используется для сценария, сцены, монтажного плана и экспорта.</p><span class="tag">LOCAL MODE</span><span class="tag">PROJECT SAVE</span><span class="tag">TXT / JSON EXPORT</span></div>
 </section>
 
-<section class="panel">
-<h3>SCENE DIRECTOR OUTPUT</h3>
-<div id="output">Здесь появится структура фильма.</div>
-<button class="secondary" onclick="copyFilm()">КОПИРОВАТЬ ПРОЕКТ</button>
-<button class="secondary" onclick="downloadFilm()">СКАЧАТЬ ПРОЕКТ TXT</button>
+<section class="page" id="research">
+ <h1>Research AI</h1><p class="sub">Организация исследования, источников и проверки фактов.</p>
+ <div class="panel">
+  <label>Исследовательский вопрос</label>
+  <textarea id="researchQuestion" placeholder="Какой вопрос нужно исследовать?"></textarea>
+  <label>Источники и заметки (вставляй ссылки и выдержки)</label>
+  <textarea id="researchSources" placeholder="Источник 1: название, ссылка, дата, что подтверждает..."></textarea>
+  <label>Проверенные факты и вопросы</label>
+  <textarea id="researchFacts" placeholder="Факт, подтверждающий источник, что ещё нужно проверить..."></textarea>
+  <button class="btn" onclick="saveResearch()">Сохранить исследование</button>
+  <div id="researchStatus" class="output">Исследование пока не сохранено.</div>
+ </div>
+ <div class="panel" style="margin-top:16px"><h2>Правило проверки</h2><p class="muted">Не считай факт доказанным только потому, что он появился в тексте. Сверяй даты, имена и цифры с первичными или независимыми источниками. Этот модуль не выполняет автоматический поиск в интернете.</p></div>
 </section>
 
-<p class="muted">OLIM ENGINE 3.0 · LOCAL GENERATOR · FACT CHECK REQUIRED</p>
+<section class="page" id="script">
+ <h1>Script AI</h1><p class="sub">Создание структуры и текста документального сценария.</p>
+ <div class="panel">
+  <label>Тема</label><input id="scriptTopic" placeholder="Тема фильма">
+  <label>Главный герой или объект</label><input id="scriptHero" placeholder="Имя, организация, событие или явление">
+  <label>Стиль повествования</label><select id="scriptMood"><option>Серьёзный и аналитический</option><option>Загадочный и атмосферный</option><option>Динамичный и напряжённый</option><option>Исторический и спокойный</option><option>Научно-популярный</option></select>
+  <label>Дополнительные факты и материалы</label><textarea id="scriptFacts" placeholder="Добавь проверенные сведения из исследования..."></textarea>
+  <button class="btn" onclick="generateScript()">Создать сценарий</button>
+  <button class="btn secondary" onclick="copyText('scriptOutput')">Копировать</button>
+  <div id="scriptOutput" class="output">Здесь появится сценарий.</div>
+ </div>
+</section>
+
+<section class="page" id="scenes">
+ <h1>Scene Director</h1><p class="sub">Разделение истории на сцены и визуальные эпизоды.</p>
+ <div class="panel">
+  <label>Сценарий для раскадровки</label><textarea id="sceneInput" placeholder="Вставь сценарий или создай его в Script AI..."></textarea>
+  <label>Количество сцен</label><select id="sceneCount"><option>4</option><option selected>6</option><option>8</option><option>10</option></select>
+  <button class="btn" onclick="generateScenes()">Создать раскадровку</button>
+  <div id="sceneOutput"></div>
+ </div>
+</section>
+
+<section class="page" id="timeline">
+ <h1>Production Timeline</h1><p class="sub">План последовательности монтажа и звукового оформления.</p>
+ <div class="panel">
+  <label>Список сцен</label><textarea id="timelineInput" placeholder="Вставь сцены или сценарий..."></textarea>
+  <button class="btn" onclick="generateTimeline()">Составить монтажный план</button>
+  <div id="timelineOutput" class="output">Здесь появится монтажный план.</div>
+ </div>
+</section>
+
+<section class="page" id="voice">
+ <h1>Voice Studio</h1><p class="sub">Подготовка дикторского текста и проверка озвучивания браузером.</p>
+ <div class="panel">
+  <label>Текст диктора</label><textarea id="voiceText" placeholder="Вставь текст для озвучивания..."></textarea>
+  <label>Скорость речи</label><input id="voiceRate" type="range" min="0.7" max="1.3" step="0.1" value="1">
+  <button class="btn" onclick="speakText()">Прослушать</button>
+  <button class="btn secondary" onclick="stopSpeech()">Остановить</button>
+  <p class="muted" id="voiceStatus">Используется синтез речи браузера, если он доступен. Это не профессиональная AI-озвучка.</p>
+ </div>
+</section>
+
+<section class="page" id="library">
+ <h1>Project Library</h1><p class="sub">Сохранение и открытие проектов на этом устройстве.</p>
+ <div class="panel">
+  <button class="btn" onclick="saveProject()">Сохранить текущий проект</button>
+  <button class="btn secondary" onclick="refreshLibrary()">Обновить список</button>
+  <div id="libraryList"></div>
+  <p class="muted">Проекты хранятся в локальной памяти браузера. Очистка данных сайта может удалить их. Экспортируй резервные копии.</p>
+ </div>
+</section>
+
+<section class="page" id="export">
+ <h1>Export Center</h1><p class="sub">Экспорт проекта и материалов для дальнейшей работы.</p>
+ <div class="panel">
+  <button class="btn" onclick="downloadTXT()">Экспортировать TXT</button>
+  <button class="btn secondary" onclick="downloadJSON()">Экспортировать JSON</button>
+  <div id="exportStatus" class="output">Экспортируй текущий проект в удобном формате.</div>
+ </div>
+</section>
+
+<section class="page" id="assistant">
+ <h1>AI Assistant Connector</h1><p class="sub">Подготовка задания для внешнего AI-помощника и перенос результата обратно в проект.</p>
+ <div class="panel">
+  <label>Выбери задачу</label><select id="aiTask"><option>Исследовать тему и предложить источники</option><option>Написать документальный сценарий</option><option>Создать раскадровку</option><option>Проверить логику и структуру фильма</option></select>
+  <label>Дополнительные инструкции</label><textarea id="aiInstructions" placeholder="Укажи требования, стиль, ограничения и желаемую длину..."></textarea>
+  <button class="btn" onclick="makePrompt()">Подготовить AI-запрос</button>
+  <div id="aiPrompt" class="output">Здесь появится запрос для внешнего AI.</div>
+  <button class="btn secondary" onclick="copyText('aiPrompt')">Копировать запрос</button>
+  <hr>
+  <label>Вставь ответ AI сюда</label><textarea id="aiResponse" placeholder="Вставь ответ внешнего AI..."></textarea>
+  <button class="btn" onclick="useAIResponse()">Сохранить ответ в сценарий</button>
+ </div>
+ <div class="panel" style="margin-top:16px"><h2>Подключение AI</h2><p class="muted">Сейчас модуль формирует запросы для ручной передачи в совместимый сервис. Прямое подключение AI не настроено. Не вставляй секретные API-ключи в этот публичный HTML-файл или GitHub.</p></div>
+</section>
+
+<section class="page" id="settings">
+ <h1>Settings</h1><p class="sub">Настройки рабочей среды.</p>
+ <div class="panel">
+  <h2>OLIM Documentary Engine</h2>
+  <p>Версия: 10.0</p>
+  <p>Режим: локальная работа в браузере</p>
+  <p>Хранение: localStorage</p>
+  <p>Хостинг: GitHub Pages</p>
+  <hr>
+  <button class="btn secondary" onclick="if(confirm('Очистить сохранённые проекты на этом устройстве?')){localStorage.removeItem('olimProjects');refreshLibrary();alert('Библиотека очищена')}">Очистить библиотеку проектов</button>
+ </div>
+</section>
+
 </main>
+</div>
+<footer>OLIM DOCUMENTARY ENGINE 10.0 · DOCUMENTARY PRODUCTION WORKSPACE</footer>
 
 <script>
-let projectText="";
-
-function createFilm(){
-const topic=document.getElementById("topic").value.trim();
-const hero=document.getElementById("hero").value.trim()||"Не указан";
-const duration=Number(document.getElementById("duration").value);
-const style=document.getElementById("style").value;
-const details=document.getElementById("details").value.trim();
-
-if(!topic){alert("Введите тему фильма");return;}
-
-const parts=[
-["ВСТУПЛЕНИЕ","Открывающий кадр, который сразу заинтересует зрителя.","Обозначить главную загадку или вопрос истории.","Крупный план, архивный кадр или общий атмосферный план.","Короткий звуковой акцент, затем спокойная музыка.","Плавное затемнение."],
-["ПРЕДЫСТОРИЯ","Показать место, время и обстоятельства событий.","Объяснить, как началась история и почему она важна.","Архивные фотографии, карта, документы, временная шкала.","Спокойная документальная музыка.","Плавный переход."],
-["ЗНАКОМСТВО С ГЕРОЕМ","Представить главного героя и его окружение.","Раскрыть характер, цели и обстоятельства жизни героя.","Портрет, фотографии, интервью, детали окружения.","Нейтральная атмосферная музыка.","Смена планов."],
-["РАЗВИТИЕ СОБЫТИЙ","Показать последовательность основных событий.","Рассказать о ключевых решениях и последствиях.","Хроника, фотографии, карты, подтверждённые материалы.","Музыка постепенно усиливается.","Монтаж по смыслу."],
-["ПОВОРОТНЫЙ МОМЕНТ","Выделить событие, изменившее ход истории.","Объяснить, почему этот момент стал решающим.","Архивный материал, крупные планы деталей, графика.","Пауза и музыкальный акцент.","Резкий переход по смыслу."],
-["КУЛЬМИНАЦИЯ","Представить наиболее важное событие истории.","Раскрыть его значение и последствия.","Самые значимые доступные документальные кадры.","Напряжённая музыка.","Замедление темпа."],
-["ПОСЛЕДСТВИЯ","Показать, что произошло после главных событий.","Объяснить влияние истории на настоящее.","Современные кадры, сравнение прошлого и настоящего.","Музыка становится спокойнее.","Плавный переход."],
-["ФИНАЛ","Оставить зрителю важную мысль.","Подвести итог и вернуться к главному вопросу фильма.","Символический заключительный кадр.","Спокойное завершение музыки.","Затемнение."]
-];
-
-const count=duration===1?4:duration===5?6:duration===10?8:8;
-const selected=parts.slice(0,count);
-const sceneTime=duration/selected.length;
-
-let html=`<h2>${escapeHTML(topic)}</h2>
-<p>Герой: ${escapeHTML(hero)}<br>Стиль: ${escapeHTML(style)}<br>Продолжительность: ${duration} мин.</p>
-<p><b>ПРОИЗВОДСТВЕННЫЙ ПЛАН</b></p>`;
-
-projectText=`OLIM DOCUMENTARY ENGINE 3.0\nТЕМА: ${topic}\nГЕРОЙ: ${hero}\nСТИЛЬ: ${style}\nДЛИТЕЛЬНОСТЬ: ${duration} минут\n\n`;
-
-selected.forEach((part,i)=>{
-const time=sceneTime.toFixed(2);
-html+=`<div class="scene">
-<h3>СЦЕНА ${i+1} — ${part[0]}</h3>
-<p><b>Время:</b> ${time} мин.</p>
-<p><b>Содержание:</b> ${part[1]}</p>
-<p><b>Диктор:</b> ${part[2]}</p>
-<p><b>Видеоряд:</b> ${part[3]}</p>
-<p><b>Звук:</b> ${part[4]}</p>
-<p><b>Монтаж:</b> ${part[5]}</p>
-</div>`;
-
-projectText+=`\nСЦЕНА ${i+1}: ${part[0]}\nВремя: ${time} мин.\nСодержание: ${part[1]}\nДиктор: ${part[2]}\nВидеоряд: ${part[3]}\nЗвук: ${part[4]}\nМонтаж: ${part[5]}\n`;
-});
-
-projectText+=`\nДОПОЛНИТЕЛЬНЫЕ ДЕТАЛИ:\n${details||"Не указаны"}\n\nПРОВЕРКА: все даты, имена, цитаты и события должны быть проверены по надёжным источникам.\n`;
-document.getElementById("output").innerHTML=html;
+const $=id=>document.getElementById(id);
+let project={title:"Без названия",topic:"",style:"Документальный фильм",duration:5,script:"",scenes:[],research:{question:"",sources:"",facts:""},timeline:""};
+function go(page){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
+ $(page).classList.add('active');
+ if(page==="library")refreshLibrary();
 }
-
-function escapeHTML(value){
-return value.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
+function syncDashboard(){
+ $('dashTitle').textContent=project.title;
+ $('dashWords').textContent=project.script.length;
+ $('dashScenes').textContent=project.scenes.length;
 }
-
-function copyFilm(){
-if(!projectText){alert("Сначала создай проект");return;}
-const area=document.createElement("textarea");
-area.value=projectText;
-document.body.appendChild(area);
-area.select();
-try{document.execCommand("copy");alert("Проект скопирован");}
-catch(e){alert("Не удалось скопировать");}
-area.remove();
+function createProject(){
+ project.title=$('projectTitle').value.trim()||"Без названия";
+ project.topic=$('projectTopic').value.trim();
+ project.style=$('projectStyle').value;
+ project.duration=Number($('projectDuration').value);
+ $('scriptTopic').value=project.topic;
+ $('sceneInput').value=project.script;
+ syncDashboard();
+ alert("Проект создан.");
 }
-
-function downloadFilm(){
-if(!projectText){alert("Сначала создай проект");return;}
-const blob=new Blob(["\uFEFF"+projectText],{type:"text/plain;charset=utf-8"});
-const url=URL.createObjectURL(blob);
-const a=document.createElement("a");
-a.href=url;a.download="OLIM-Documentary-Project.txt";a.click();
-URL.revokeObjectURL(url);
+function generateScript(){
+ const topic=$('scriptTopic').value.trim()||project.topic;
+ if(!topic){alert("Сначала укажи тему фильма.");return}
+ const hero=$('scriptHero').value.trim()||"главный объект исследования";
+ const mood=$('scriptMood').value;
+ const facts=$('scriptFacts').value.trim()||"Добавить проверенные факты и ссылки на источники.";
+ project.topic=topic;
+ project.script=
+ "OLIM DOCUMENTARY ENGINE 10.0\n"+
+ "ДОКУМЕНТАЛЬНЫЙ СЦЕНАРИЙ\n\n"+
+ "Название: "+project.title+"\nТема: "+topic+"\nГлавный объект: "+hero+"\nСтиль: "+mood+"\n\n"+
+ "01. ВСТУПЛЕНИЕ — HOOK\n"+
+ "Зацепка: начни с необычного вопроса, контраста или важной детали, которая раскрывает тему фильма.\n"+
+ "Диктор: «История "+topic+" начинается с вопроса, на который не так просто ответить...»\n"+
+ "Визуал: атмосферные общие планы, архивные материалы или нейтральные иллюстрации.\n\n"+
+ "02. КОНТЕКСТ\n"+
+ "Объясни время, место и обстоятельства. Представь "+hero+". Не добавляй неподтверждённые детали.\n\n"+
+ "03. ОСНОВНОЕ РАССЛЕДОВАНИЕ\n"+
+ "Раскрой ключевые события последовательно. Для каждого утверждения укажи источник и степень достоверности.\n\n"+
+ "04. ПОВОРОТНЫЙ МОМЕНТ\n"+
+ "Покажи факт или событие, которое меняет понимание истории. Объясни, почему оно важно.\n\n"+
+ "05. АНАЛИЗ И РАЗНЫЕ ВЕРСИИ\n"+
+ "Сопоставь подтверждённые факты, альтернативные объяснения и неизвестные детали. Не выдавай предположения за факты.\n\n"+
+ "06. ФИНАЛ\n"+
+ "Подведи итог, ответь на главный вопрос настолько, насколько позволяют источники, и оставь зрителю содержательный вывод.\n\n"+
+ "МАТЕРИАЛЫ И ФАКТЫ:\n"+facts+"\n\n"+
+ "ПРОИЗВОДСТВЕННОЕ ПРИМЕЧАНИЕ:\n"+
+ "Это сценарная основа, созданная локальным шаблоном. Все имена, даты, цитаты и утверждения нужно проверить по надёжным источникам.";
+ $('scriptOutput').textContent=project.script;
+ $('sceneInput').value=project.script;
+ syncDashboard();
 }
-</script>
-</body>
-</html>
+function generateScenes(){
+ const source=$('sceneInput').value.trim()||project.script;
+ if(!source){alert("Сначала добавь сценарий.");return}
+ const count=Number($('sceneCount').value);
+ const chunks=source.split(/\n\n+/).filter(x=>x.trim().length>20);
+ const scenes=[];
+ for(let i=0;i<count;i++){
+  const part=chunks[i%Math.max(chunks.length,1)]||source;
+  scenes.push({number:i+1,title:["Вступление","Контекст","Предыстория","Главное событие","Расследование","Детали","Анализ","Последствия","Вывод","Финал"][i]||"Эпизод "+(i+1),text:part.slice(0,420)});
+ }
+ project.scenes=scenes;
+ $('sceneOutput').innerHTML="";
+ scenes.forEach(s=>{
+  const div=document.createElement('div');div.className="item";
+  const h=document.createElement('h3');h.textContent="Сцена "+s.number+" — "+s.title;
+  const p=document.createElement('p');p.textContent=s.text;
+  const meta=document.createElement('p');meta.className="muted";meta.textContent="Визуал: подбери архивные кадры, фотографии или иллюстрации по теме. Звук: спокойная подложка, голос диктора. Переход: монтаж по смыслу.";
+  div.append(h,p,meta);$('sceneOutput').append(div);
+ });
+ syncDashboard();
+}
+function generateTimeline(){
+ const text=$('timelineInput').value.trim()||project.script;
+ if(!text){alert("Добавь сценарий или сцены.");return}
+ const lines=["МОНТАЖНЫЙ ПЛАН OLIM 10.0","1. Открытие: сильный визуальный кадр и короткая зацепка.","2. Контекст: обозначить место, время и участников.","3. Основная часть: чередовать дикторский текст, подтверждённые материалы и поясняющие кадры.","4. Поворот: выделить ключевое событие музыкой и монтажным акцентом.","5. Анализ: дать зрителю время понять факты.","6. Финал: итог, заключительный кадр и титры.","","ПРОВЕРИТЬ ПЕРЕД ЭКСПОРТОМ:","• Права на архивные кадры и музыку.","• Точность титров, имён и дат.","• Читаемость субтитров.","• Громкость голоса и музыки.","","ИСХОДНЫЙ МАТЕРИАЛ:\n"+text];
+ project.timeline=lines.join("\n");
+ $('timelineOutput').textContent=project.timeline;
+}
+function saveResearch(){
+ project.research={question:$('researchQuestion').value,sources:$('researchSources').value,facts:$('researchFacts').value};
+ $('researchStatus').textContent="Исследовательские заметки добавлены в текущий проект. Не забудь отдельно проверить достоверность источников.";
+}
+function saveProject(){
+ project.title=$('projectTitle').value.trim()||project.title;
+ project.topic=$('projectTopic').value.trim()||project.topic;
+ const list=JSON.parse(localStorage.getItem('olimProjects')||"[]");
+ project.updated=new Date().toISOString();
+ list.unshift(JSON.parse(JSON.stringify(project)));
+ localStorage.setItem('olimProjects',JSON.stringify(list.slice(0,30)));
+ syncDashboard();refreshLibrary();
+ alert("Проект сохранён на этом устройстве.");
+}
+function refreshLibrary(){
+ const list=JSON.parse(localStorage.getItem('olimProjects')||"[]");
+ $('libraryList').innerHTML="";
+ if(!list.length){$('libraryList').textContent="Сохранённых проектов пока нет.";return}
+ list.forEach((p,i)=>{
+  const div=document.createElement('div');div.className="item";
+  const h=document.createElement('h3');h.textContent=p.title||"Без названия";
+  const info=document.createElement('p');info.className="muted";info.textContent="Сцен: "+(p.scenes||[]).length+" · Сохранён: "+new Date(p.updated).toLocaleString();
+  const open=document.createElement('button');open.className="btn";open.textContent="Открыть";open.onclick=()=>loadProject(i);
+  const del=document.createElement('button');del.className="btn secondary";del.textContent="Удалить";del.onclick=()=>deleteProject(i);
+  div.append(h,info,open,del);$('libraryList').append(div);
+ });
+}
+function loadProject(i){
+ const list=JSON.parse(localStorage.getItem('olimProjects')||"[]");
+ project=list[i];$('projectTitle').value=project.title;$('projectTopic').value=project.topic;
+ $('scriptTopic').value=project.topic;$('scriptOutput').textContent=project.script||"";
+ $('sceneInput').value=project.script||"";$('timelineOutput').textContent=project.timeline||"";
+ $('researchQuestion').value=project.research?.question||"";
+ $('researchSources').value=project.research?.sources||"";
+ $('researchFacts').value=project.research?.facts||"";
+ $('voiceText').value=pr
