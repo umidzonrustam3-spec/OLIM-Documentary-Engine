@@ -6,109 +6,419 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OLIM Documentary Engine</title>
 <style>
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  padding: 25px;
-  background: #090b10;
-  color: white;
-  font-family: Arial, sans-serif;
+*{box-sizing:border-box}
+body{
+ margin:0;padding:20px;background:#090b10;color:#fff;
+ font-family:Arial,sans-serif
 }
-.container { max-width: 700px; margin: auto; }
-h1 { letter-spacing: 2px; }
-.accent { color: #d6a85c; }
-p { color: #a5a8b1; }
-label { display: block; margin-top: 22px; }
-input, select, button, textarea {
-  width: 100%;
-  padding: 14px;
-  margin-top: 9px;
-  border-radius: 9px;
-  border: 1px solid #303541;
-  background: #151923;
-  color: white;
-  font-size: 16px;
+.container{max-width:850px;margin:auto}
+h1{letter-spacing:2px;font-size:27px}
+.accent{color:#c49a58}
+.subtitle{color:#9299a8;letter-spacing:3px;font-size:11px}
+.panel{
+ background:#141923;border:1px solid #303744;
+ padding:18px;border-radius:12px;margin-top:20px
 }
-button {
-  background: #b68a48;
-  color: #080808;
-  font-weight: bold;
-  border: none;
-  margin-top: 25px;
+label{display:block;margin:17px 0 8px;color:#c7cbd3}
+input,select,textarea{
+ width:100%;padding:13px;background:#090e17;
+ border:1px solid #384151;border-radius:8px;
+ color:white;font-size:15px
 }
-#result {
-  margin-top: 25px;
-  padding: 18px;
-  background: #151923;
-  border-radius: 12px;
-  white-space: pre-wrap;
-  line-height: 1.6;
+textarea{min-height:85px;resize:vertical}
+button{
+ width:100%;padding:15px;margin-top:18px;
+ border:0;border-radius:8px;background:#c49a58;
+ color:#111;font-weight:bold;font-size:15px
 }
+.secondary{background:#303947;color:white}
+#result{
+ white-space:pre-wrap;line-height:1.7;
+ overflow-wrap:anywhere;color:#e4e6eb
+}
+.small{color:#9299a8;font-size:12px}
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>OLIM <span class="accent">DOCUMENTARY</span></h1>
-  <p>CINEMATIC DOCUMENTARY ENGINE</p>
+<h1>OLIM <span class="accent">DOCUMENTARY</span></h1>
+<div class="subtitle">CINEMATIC DOCUMENTARY ENGINE 2.0</div>
 
-  <label>Тема документального фильма</label>
-  <input id="topic" placeholder="Например: История UFC">
+<div class="panel">
+<h3>PROJECT CONFIGURATION</h3>
 
-  <label>Стиль фильма</label>
-  <select id="style">
-    <option>Кинематографический</option>
-    <option>Исторический</option>
-    <option>Мрачный документальный</option>
-    <option>Расследование</option>
-  </select>
+<label>Тема документального фильма</label>
+<input id="topic" placeholder="Например: История UFC">
 
-  <label>Продолжительность</label>
-  <select id="duration">
-    <option>1 минута</option>
-    <option>5 минут</option>
-    <option>10 минут</option>
-    <option>30 минут</option>
-  </select>
+<label>Главный герой или объект</label>
+<input id="hero" placeholder="Например: История бойца">
 
-  <button onclick="generate()">СОЗДАТЬ СЦЕНАРНЫЙ ПЛАН</button>
+<label>Стиль фильма</label>
+<select id="style">
+<option>Кинематографический</option>
+<option>Исторический</option>
+<option>Мрачный документальный</option>
+<option>Расследование</option>
+<option>Биография</option>
+<option>Спортивная документалистика</option>
+</select>
 
-  <div id="result">Здесь появится сценарный план...</div>
+<label>Продолжительность</label>
+<select id="duration">
+<option value="1">1 минута</option>
+<option value="5">5 минут</option>
+<option value="10">10 минут</option>
+<option value="30">30 минут</option>
+</select>
+
+<label>Атмосфера</label>
+<select id="mood">
+<option>Напряжённая</option>
+<option>Эпическая</option>
+<option>Загадочная</option>
+<option>Эмоциональная</option>
+<option>Нейтральная</option>
+</select>
+
+<label>Дополнительные детали</label>
+<textarea id="details" placeholder="Какие события обязательно включить?"></textarea>
+
+<button onclick="generate()">СОЗДАТЬ ДОКУМЕНТАЛЬНЫЙ СЦЕНАРИЙ</button>
+</div>
+
+<div class="panel">
+<h3>DOCUMENTARY OUTPUT</h3>
+<div id="result">Здесь появится твой сценарий...</div>
+<button class="secondary" onclick="copyResult()">КОПИРОВАТЬ СЦЕНАРИЙ</button>
+<button class="secondary" onclick="downloadResult()">СКАЧАТЬ TXT</button>
+</div>
+
+<p class="small">
+OLIM ENGINE 2.0 · LOCAL SCRIPT GENERATOR<br>
+Сценарий создаётся по шаблону. Исторические факты необходимо проверять по источникам.
+</p>
 </div>
 
 <script>
-function generate() {
-  const topic = document.getElementById("topic").value.trim();
-  const style = document.getElementById("style").value;
-  const duration = document.getElementById("duration").value;
+function generate(){
+const topic=document.getElementById("topic").value.trim();
+const hero=document.getElementById("hero").value.trim() || "Главный герой не указан";
+const style=document.getElementById("style").value;
+const duration=Number(document.getElementById("duration").value);
+const mood=document.getElementById("mood").value;
+const details=document.getElementById("details").value.trim();
 
-  if (!topic) {
-    alert("Введите тему фильма");
-    return;
-  }
+if(!topic){
+alert("Сначала введи тему фильма.");
+return;
+}
 
-  document.getElementById("result").textContent =
-`OLIM DOCUMENTARY ENGINE
+const sections=[
+["01. CINEMATIC INTRO","Начни с самого интригующего момента истории. Используй короткие выразительные предложения, атмосферные кадры и вопрос, который заинтересует зрителя."],
+["02. BACKGROUND","Раскрой исторический контекст. Объясни, где и когда происходят события, кто основные участники и почему эта история важна."],
+["03. THE BEGINNING","Покажи начало пути главного героя или события. Расскажи о предпосылках, первых решениях и важных обстоятельствах."],
+["04. MAIN STORY","Последовательно раскрой ключевые события. Добавь даты, места, участников и подтверждённые факты. Объясни причины и последствия."],
+["05. TURNING POINT","Раскрой главный поворот истории. Покажи, что изменилось и почему это стало важным моментом."],
+["06. CLIMAX","Подведи повествование к самому значимому событию. Используй напряжённый ритм и сильные визуальные образы."],
+["07. CONCLUSION","Покажи последствия событий. Объясни, какое значение история имеет сегодня."],
+["08. FINAL MESSAGE","Заверши фильм сильной мыслью, которая останется у зрителя после просмотра."]
+];
 
-ТЕМА: ${topic}
+let output=`OLIM DOCUMENTARY ENGINE 2.0
+
+НАЗВАНИЕ ПРОЕКТА: ${topic}
+ГЛАВНЫЙ ГЕРОЙ: ${hero}
 СТИЛЬ: ${style}
-ДЛИТЕЛЬНОСТЬ: ${duration}
+АТМОСФЕРА: ${mood}
+ДЛИТЕЛЬНОСТЬ: ${duration} минут
 
-1. ВСТУПЛЕНИЕ
-Создать сильное кинематографическое начало.
+================================
+ПОЛНЫЙ СЦЕНАРНЫЙ ПЛАН
+================================
 
-2. КОНТЕКСТ
-Рассказать предысторию и основные события.
+`;
 
-3. ГЛАВНАЯ ИСТОРИЯ
-Раскрыть ключевые факты и важные моменты.
+const weights=[8,12,10,22,12,16,12,8];
 
-4. КУЛЬМИНАЦИЯ
-Представить главный поворот истории.
+sections.forEach((section,i)=>{
+let minutes=(duration*weights[i]/100).toFixed(1);
+output+=`${section[0]}
+ВРЕМЯ: ${minutes} мин.
 
-5. ЗАКЛЮЧЕНИЕ
-Подвести итог и оставить сильную финальную мысль.
+ТЕКСТ И СОДЕРЖАНИЕ:
+${section[1]}
 
-ПЛАН СОЗДАН ЛОКАЛЬНО. ФАКТЫ ТРЕБУЮТ ПРОВЕРКИ.`;
+ТЕКСТ ДЛЯ ДИКТОРА:
+Подготовь связный рассказ о разделе "${section[0]}". Используй естественный документальный язык, конкретные детали и плавные переходы. Не выдумывай факты.
+
+ВИЗУАЛЬНЫЙ РЯД:
+Подбери архивные фотографии, видеоматериалы, карты, документы или тематические кадры, соответствующие подтверждённым событиям.
+
+ЗВУК:
+Подбери музыку и звуковое оформление, соответствующие атмосфере "${mood.toLowerCase()}".
+
+--------------------------------
+
+`;
+});
+
+output+=`ДОПОЛНИТЕЛЬНЫЕ УКАЗАНИЯ:
+${details || "Дополнительные детали не указаны."}
+
+РЕДАКТОРСКАЯ ПРОВЕРКА:
+1. Проверить даты и имена.
+2. Проверить достоверность событий.
+3. Указать источники информации.
+4. Не выдавать предположения за факты.
+5. Проверить права на архивные материалы и музыку.
+
+СТАТУС:
+Сценарный план создан локально.
+Для полноценного текста диктора, проверки фактов и генерации видео необходима дальнейшая работа.`;
+
+document.getElementById("result").textContent=output;
+}
+
+function copyResult(){
+const text=document.getElementById("result").textContent;
+if(!text || text.includes("Здесь появится")){
+alert("Сначала создай сценарий.");
+return;
+}
+if(navigator.clipboard){
+navigator.clipboard.writeText(text)
+.then(()=>alert("Сценарий скопирован."))
+.catch(()=>alert("Не удалось скопировать. Выдели текст вручную."));
+}else{
+alert("Выдели текст сценария и скопируй его вручную.");
+}
+}
+
+function downloadResult(){
+const text=document.getElementById("result").textContent;
+if(!text || text.includes("Здесь появится")){
+alert("Сначала создай сценарий.");
+return;
+}
+const blob=new Blob([text],{type:"text/plain;charset=utf-8"});
+const url=URL.createObjectURL(blob);
+const a=document.createElement("a");
+a.href=url;
+a.download="OLIM-Documentary-Script.txt";
+a.click();
+URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OLIM Documentary Engine</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;padding:20px;background:#090b10;color:#fff;
+ font-family:Arial,sans-serif
+}
+.container{max-width:850px;margin:auto}
+h1{letter-spacing:2px;font-size:27px}
+.accent{color:#c49a58}
+.subtitle{color:#9299a8;letter-spacing:3px;font-size:11px}
+.panel{
+ background:#141923;border:1px solid #303744;
+ padding:18px;border-radius:12px;margin-top:20px
+}
+label{display:block;margin:17px 0 8px;color:#c7cbd3}
+input,select,textarea{
+ width:100%;padding:13px;background:#090e17;
+ border:1px solid #384151;border-radius:8px;
+ color:white;font-size:15px
+}
+textarea{min-height:85px;resize:vertical}
+button{
+ width:100%;padding:15px;margin-top:18px;
+ border:0;border-radius:8px;background:#c49a58;
+ color:#111;font-weight:bold;font-size:15px
+}
+.secondary{background:#303947;color:white}
+#result{
+ white-space:pre-wrap;line-height:1.7;
+ overflow-wrap:anywhere;color:#e4e6eb
+}
+.small{color:#9299a8;font-size:12px}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>OLIM <span class="accent">DOCUMENTARY</span></h1>
+<div class="subtitle">CINEMATIC DOCUMENTARY ENGINE 2.0</div>
+
+<div class="panel">
+<h3>PROJECT CONFIGURATION</h3>
+
+<label>Тема документального фильма</label>
+<input id="topic" placeholder="Например: История UFC">
+
+<label>Главный герой или объект</label>
+<input id="hero" placeholder="Например: История бойца">
+
+<label>Стиль фильма</label>
+<select id="style">
+<option>Кинематографический</option>
+<option>Исторический</option>
+<option>Мрачный документальный</option>
+<option>Расследование</option>
+<option>Биография</option>
+<option>Спортивная документалистика</option>
+</select>
+
+<label>Продолжительность</label>
+<select id="duration">
+<option value="1">1 минута</option>
+<option value="5">5 минут</option>
+<option value="10">10 минут</option>
+<option value="30">30 минут</option>
+</select>
+
+<label>Атмосфера</label>
+<select id="mood">
+<option>Напряжённая</option>
+<option>Эпическая</option>
+<option>Загадочная</option>
+<option>Эмоциональная</option>
+<option>Нейтральная</option>
+</select>
+
+<label>Дополнительные детали</label>
+<textarea id="details" placeholder="Какие события обязательно включить?"></textarea>
+
+<button onclick="generate()">СОЗДАТЬ ДОКУМЕНТАЛЬНЫЙ СЦЕНАРИЙ</button>
+</div>
+
+<div class="panel">
+<h3>DOCUMENTARY OUTPUT</h3>
+<div id="result">Здесь появится твой сценарий...</div>
+<button class="secondary" onclick="copyResult()">КОПИРОВАТЬ СЦЕНАРИЙ</button>
+<button class="secondary" onclick="downloadResult()">СКАЧАТЬ TXT</button>
+</div>
+
+<p class="small">
+OLIM ENGINE 2.0 · LOCAL SCRIPT GENERATOR<br>
+Сценарий создаётся по шаблону. Исторические факты необходимо проверять по источникам.
+</p>
+</div>
+
+<script>
+function generate(){
+const topic=document.getElementById("topic").value.trim();
+const hero=document.getElementById("hero").value.trim() || "Главный герой не указан";
+const style=document.getElementById("style").value;
+const duration=Number(document.getElementById("duration").value);
+const mood=document.getElementById("mood").value;
+const details=document.getElementById("details").value.trim();
+
+if(!topic){
+alert("Сначала введи тему фильма.");
+return;
+}
+
+const sections=[
+["01. CINEMATIC INTRO","Начни с самого интригующего момента истории. Используй короткие выразительные предложения, атмосферные кадры и вопрос, который заинтересует зрителя."],
+["02. BACKGROUND","Раскрой исторический контекст. Объясни, где и когда происходят события, кто основные участники и почему эта история важна."],
+["03. THE BEGINNING","Покажи начало пути главного героя или события. Расскажи о предпосылках, первых решениях и важных обстоятельствах."],
+["04. MAIN STORY","Последовательно раскрой ключевые события. Добавь даты, места, участников и подтверждённые факты. Объясни причины и последствия."],
+["05. TURNING POINT","Раскрой главный поворот истории. Покажи, что изменилось и почему это стало важным моментом."],
+["06. CLIMAX","Подведи повествование к самому значимому событию. Используй напряжённый ритм и сильные визуальные образы."],
+["07. CONCLUSION","Покажи последствия событий. Объясни, какое значение история имеет сегодня."],
+["08. FINAL MESSAGE","Заверши фильм сильной мыслью, которая останется у зрителя после просмотра."]
+];
+
+let output=`OLIM DOCUMENTARY ENGINE 2.0
+
+НАЗВАНИЕ ПРОЕКТА: ${topic}
+ГЛАВНЫЙ ГЕРОЙ: ${hero}
+СТИЛЬ: ${style}
+АТМОСФЕРА: ${mood}
+ДЛИТЕЛЬНОСТЬ: ${duration} минут
+
+================================
+ПОЛНЫЙ СЦЕНАРНЫЙ ПЛАН
+================================
+
+`;
+
+const weights=[8,12,10,22,12,16,12,8];
+
+sections.forEach((section,i)=>{
+let minutes=(duration*weights[i]/100).toFixed(1);
+output+=`${section[0]}
+ВРЕМЯ: ${minutes} мин.
+
+ТЕКСТ И СОДЕРЖАНИЕ:
+${section[1]}
+
+ТЕКСТ ДЛЯ ДИКТОРА:
+Подготовь связный рассказ о разделе "${section[0]}". Используй естественный документальный язык, конкретные детали и плавные переходы. Не выдумывай факты.
+
+ВИЗУАЛЬНЫЙ РЯД:
+Подбери архивные фотографии, видеоматериалы, карты, документы или тематические кадры, соответствующие подтверждённым событиям.
+
+ЗВУК:
+Подбери музыку и звуковое оформление, соответствующие атмосфере "${mood.toLowerCase()}".
+
+--------------------------------
+
+`;
+});
+
+output+=`ДОПОЛНИТЕЛЬНЫЕ УКАЗАНИЯ:
+${details || "Дополнительные детали не указаны."}
+
+РЕДАКТОРСКАЯ ПРОВЕРКА:
+1. Проверить даты и имена.
+2. Проверить достоверность событий.
+3. Указать источники информации.
+4. Не выдавать предположения за факты.
+5. Проверить права на архивные материалы и музыку.
+
+СТАТУС:
+Сценарный план создан локально.
+Для полноценного текста диктора, проверки фактов и генерации видео необходима дальнейшая работа.`;
+
+document.getElementById("result").textContent=output;
+}
+
+function copyResult(){
+const text=document.getElementById("result").textContent;
+if(!text || text.includes("Здесь появится")){
+alert("Сначала создай сценарий.");
+return;
+}
+if(navigator.clipboard){
+navigator.clipboard.writeText(text)
+.then(()=>alert("Сценарий скопирован."))
+.catch(()=>alert("Не удалось скопировать. Выдели текст вручную."));
+}else{
+alert("Выдели текст сценария и скопируй его вручную.");
+}
+}
+
+function downloadResult(){
+const text=document.getElementById("result").textContent;
+if(!text || text.includes("Здесь появится")){
+alert("Сначала создай сценарий.");
+return;
+}
+const blob=new Blob([text],{type:"text/plain;charset=utf-8"});
+const url=URL.createObjectURL(blob);
+const a=document.createElement("a");
+a.href=url;
+a.download="OLIM-Documentary-Script.txt";
+a.click();
+URL.revokeObjectURL(url);
 }
 </script>
 </body>
