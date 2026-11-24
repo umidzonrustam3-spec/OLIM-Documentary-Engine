@@ -1,0 +1,199 @@
+mkdir -p ai-video-studio/public && cd ai-video-studio
+
+cat > package.json <<'EOF'
+{
+  "name": "ai-video-studio",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "dotenv": "^16.4.5", "express": "^4.19.2" }
+}
+EOF
+
+printf 'node_modules\n.env\nout\n' > .gitignore
+
+cat > server.js <<'EOF'
+import "dotenv/config";
+import express from "express";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import fs from "node:fs/promises";
+import path from "node:path";
+import crypto from "node:crypto";
+
+const run = promisify(execFile);
+const app = express();
+app.use(express.json());
+app.use(express.static("public"));
+app.use("/out", express.static("out"));
+
+const COLORS = ["navy", "purple", "darkred", "darkgreen", "teal", "black"];
+
+const STYLES = {
+  "2d": "flat 2D cartoon illustration, bold colors, clean lines",
+  "3d": "3D render, soft studio lighting, detailed, cinematic",
+};
+let lastCall = 0;
+async function fetchImage(prompt, file) {
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}` +
+    `?width=1280&height=720&nologo=true&seed=${Math.floor(Math.random() * 1e6)}`;
+  for (let t = 0; t < 4; t++) {
+    const wait = lastCall + 16000 - Date.now();
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+    lastCall = Date.now();
+    try {
+      const r = await fetch(url);
+      if (r.ok && (r.headers.get("content-type") || "").startsWith("image")) {
+        await fs.writeFile(file, Buffer.from(await r.arrayBuffer()));
+        return true;
+      }
+    } catch {}
+  }
+  return false;
+}
+async function generateClip(text, sec, file, i, style, dir) {
+  const img = path.join(dir, `i${i}.jpg`);
+  const ok = await fetchImage(`${text}, ${STYLES[style] || STYLES["2d"]}`, img);
+  if (!ok) {
+    return run("ffmpeg", ["-y", "-f", "lavfi", "-i",
+      `color=c=${COLORS[i % COLORS.length]}:s=1280x720:d=${sec}:r=25`,
+      "-pix_fmt", "yuv420p", file]);
+  }
+  const frames = Math.ceil(sec * 25);
+  await run("ffmpeg", ["-y", "-loop", "1", "-i", img, "-vf",
+    `scale=1920:1080,zoompan=z='min(zoom+0.0015,1.3)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${frames}:s=1280x720:fps=25,format=yuv420p`,
+    "-t", String(sec), "-c:v", "libx264", file]);
+}
+
+async function makeVoice(text, file, lines) {
+  if (process.env.OPENAI_API_KEY) {
+    const r = await fetch("https://api.openai.com/v1/audio/speech", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ model: "tts-1", voice: "alloy", input: text }),
+    });
+    if (!r.ok) throw new Error("Ошибка озвучки: " + r.status);
+    await fs.writeFile(file, Buffer.from(await r.arrayBuffer()));
+  } else {
+    try {
+      await run("edge-tts", ["--voice", process.env.VOICE || "ru-RU-SvetlanaNeural",
+        "--text", text, "--write-media", file]);
+    } catch {
+      await run("ffmpeg", ["-y", "-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono",
+        "-t", String(lines * 3), file]);
+    }
+  }
+}
+
+async function duration(file) {
+  const { stdout } = await run("ffprobe", ["-v", "error", "-show_entries",
+    "format=duration", "-of", "csv=p=0", file]);
+  return parseFloat(stdout);
+}
+
+const ts = (s) => {
+  const p = (n, l = 2) => String(Math.floor(n)).padStart(l, "0");
+  return `${p(s / 3600)}:${p((s % 3600) / 60)}:${p(s % 60)},${p((s % 1) * 1000, 3)}`;
+};
+
+app.post("/api/create", async (req, res) => {
+  try {
+    const lines = String(req.body.script || "").split("\n")
+      .map((s) => s.trim()).filter(Boolean);
+    if (!lines.length) return res.status(400).json({ error: "Нужен сценарий" });
+    const id = crypto.randomUUID().slice(0, 8);
+    const dir = path.resolve("out", id);
+    await fs.mkdir(dir, { recursive: true });
+
+    await makeVoice(lines.join(". "), path.join(dir, "voice.mp3"), lines.length);
+    const total = await duration(path.join(dir, "voice.mp3"));
+    const per = total / lines.length;
+
+    let list = "", srt = "";
+    for (let i = 0; i < lines.length; i++) {
+      await generateClip(lines[i], per.toFixed(2), path.join(dir, `c${i}.mp4`), i, req.body.style, dir);
+      list += `file 'c${i}.mp4'\n`;
+      srt += `${i + 1}\n${ts(i * per)} --> ${ts((i + 1) * per)}\n${lines[i]}\n\n`;
+    }
+    await fs.writeFile(path.join(dir, "list.txt"), list);
+    await fs.writeFile(path.join(dir, "subs.srt"), srt);
+
+    await run("ffmpeg", ["-y", "-f", "concat", "-safe", "0", "-i", "list.txt",
+      "-i", "voice.mp3", "-vf", "subtitles=subs.srt", "-c:v", "libx264",
+      "-c:a", "aac", "-shortest", "final.mp4"], { cwd: dir });
+
+    res.json({ url: `/out/${id}/final.mp4`, srt: `/out/${id}/subs.srt` });
+  } catch (e) {
+    res.status(500).json({ error: String(e.message || e) });
+  }
+});
+
+app.post("/api/checkout", async (req, res) => {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) return res.status(501).json({ error: "Добавьте STRIPE_SECRET_KEY в .env" });
+  const base = process.env.BASE_URL || "http://localhost:3000";
+  const r = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      mode: "payment",
+      "line_items[0][price]": process.env.STRIPE_PRICE_ID,
+      "line_items[0][quantity]": "1",
+      success_url: base + "/?paid=1",
+      cancel_url: base,
+    }),
+  });
+  const j = await r.json();
+  res.json({ url: j.url, error: j.error?.message });
+});
+
+app.listen(3000, () => console.log("http://localhost:3000"));
+EOF
+
+cat > public/index.html <<'EOF'
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Video Studio</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:720px;margin:0 auto;padding:16px;background:#0f1115;color:#eee}
+textarea{width:100%;height:160px;padding:10px;border-radius:8px;border:1px solid #333;background:#181b22;color:#eee;box-sizing:border-box}
+button{padding:12px 18px;border:0;border-radius:8px;background:#7c3aed;color:#fff;font-size:16px;margin:8px 8px 8px 0}
+select{padding:10px;border-radius:8px;background:#181b22;color:#eee;margin-top:8px}
+video{width:100%;margin-top:12px;border-radius:8px}
+</style></head><body>
+<h1>AI Video Studio</h1>
+<p>Каждая строка сценария = одна сцена. Озвучка, субтитры и склейка — автоматически.</p>
+<textarea id="s" placeholder="Вставьте сценарий от ChatGPT: одна строка = одна сцена"></textarea>
+<select id="st2"><option value="2d">2D мультфильм</option><option value="3d">3D рендер</option></select><br>
+<button id="go">Создать видео</button>
+<button id="pay" style="background:#16a34a">Монетизация / Оплата</button>
+<p id="st"></p>
+<video id="v" controls hidden></video>
+<p><a id="dl" hidden download>Скачать субтитры (.srt)</a></p>
+<script>
+const $=id=>document.getElementById(id);
+$("go").onclick=async()=>{
+  $("st").textContent="Генерирую…";
+  const r=await fetch("/api/create",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({script:$("s").value,style:$("st2").value})});
+  const j=await r.json();
+  if(j.error){$("st").textContent=j.error;return}
+  $("st").textContent="Готово";
+  $("v").src=j.url;$("v").hidden=false;$("dl").href=j.srt;$("dl").hidden=false;
+};
+$("pay").onclick=async()=>{
+  const j=await(await fetch("/api/checkout",{method:"POST"})).json();
+  j.url?location.href=j.url:$("st").textContent=j.error;
+};
+</script></body></html>
+EOF
+
+npm install
+pip install edge-tts
+echo "Готово. Запуск: npm start, затем откройте http://localhost:3000"
